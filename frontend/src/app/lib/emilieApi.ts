@@ -549,27 +549,6 @@ export async function generateTabularColumnPrompt(
     });
 }
 
-export async function uploadReviewDocument(
-    reviewId: string,
-    file: File,
-    options?: {
-        projectId?: string;
-        documentIds?: string[];
-        columnsConfig?: { index: number; name: string; prompt: string }[];
-    },
-): Promise<EmilieDocument> {
-    const uploaded = options?.projectId
-        ? await uploadProjectDocument(options.projectId, file)
-        : await uploadStandaloneDocument(file);
-
-    await updateTabularReview(reviewId, {
-        columns_config: options?.columnsConfig,
-        document_ids: [...(options?.documentIds ?? []), uploaded.id],
-    });
-
-    return uploaded;
-}
-
 export async function deleteTabularReview(reviewId: string): Promise<void> {
     await apiRequest(`/tabular-review/${reviewId}`, { method: "DELETE" });
 }

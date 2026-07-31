@@ -41,7 +41,12 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // Local file server — only active when R2 env vars are not set
 app.get("/local-storage/*", (req, res) => {
   const key = (req.params as Record<string, string>)[0];
-  const filePath = path.join(process.cwd(), "uploads", path.normalize(key));
+  const uploadsRoot = path.resolve(process.cwd(), "uploads");
+  const filePath = path.resolve(uploadsRoot, key);
+  // Reject anything that resolves outside uploads/ (path traversal).
+  if (filePath !== uploadsRoot && !filePath.startsWith(uploadsRoot + path.sep)) {
+    return res.status(403).json({ detail: "Forbidden" });
+  }
   const dl = req.query.dl as string | undefined;
   if (dl) {
     res.setHeader("Content-Disposition", buildContentDisposition("attachment", dl));
